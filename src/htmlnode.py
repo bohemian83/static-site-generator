@@ -41,9 +41,6 @@ class LeafNode(HTMLNode):
         if not self.tag:
             return self.value
 
-        if not self.props:
-            return f"<{self.tag}>{self.value}</{self.tag}>"
-
         return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
 
 
@@ -55,6 +52,10 @@ class ParentNode(HTMLNode):
         if not self.tag:
             raise ValueError("no tag")
 
+        tag_html = ""
         for child in self.children:
-            if not child.value:
+            if not child.value and not isinstance(self, ParentNode):
                 raise ValueError(f"{child} has not value assigned")
+            tag_html += child.to_html()
+
+        return f"<{self.tag}{self.props_to_html()}>{tag_html}</{self.tag}>"
