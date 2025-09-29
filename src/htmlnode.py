@@ -52,10 +52,11 @@ class ParentNode(HTMLNode):
         if not self.tag:
             raise ValueError("no tag")
 
+        if self.children is None:
+            raise ValueError("invalid HTML: no children")
+
         tag_html = ""
         for child in self.children:
-            if not child.value and not isinstance(self, ParentNode):
-                raise ValueError(f"{child} has not value assigned")
             tag_html += child.to_html()
 
         return f"<{self.tag}{self.props_to_html()}>{tag_html}</{self.tag}>"
