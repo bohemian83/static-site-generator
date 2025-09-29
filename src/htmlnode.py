@@ -1,3 +1,6 @@
+from textnode import TextNode, TextType
+
+
 class HTMLNode:
     def __init__(self, tag=None, value=None, children=None, props=None):
         self.tag = tag
@@ -35,10 +38,10 @@ class LeafNode(HTMLNode):
         super().__init__(tag, value, None, props)
 
     def to_html(self):
-        if not self.value:
-            raise ValueError
+        if self.value is None:
+            raise ValueError("Invalid HMTL: no value")
 
-        if not self.tag:
+        if self.tag is None:
             return self.value
 
         return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
@@ -49,8 +52,8 @@ class ParentNode(HTMLNode):
         super().__init__(tag, None, children, props)
 
     def to_html(self):
-        if not self.tag:
-            raise ValueError("no tag")
+        if self.tag is None:
+            raise ValueError("Invalid HMTL: no tag")
 
         if self.children is None:
             raise ValueError("invalid HTML: no children")
@@ -60,3 +63,29 @@ class ParentNode(HTMLNode):
             tag_html += child.to_html()
 
         return f"<{self.tag}{self.props_to_html()}>{tag_html}</{self.tag}>"
+
+
+def text_node_to_html_node(text_node: TextNode) -> LeafNode:
+    try:
+        text_type = TextType(text_node.text_type)
+        match text_type:
+            case TextType.TEXT:
+                return LeafNode(tag=None, value=text_node.text, props=None)
+            case TextType.BOLD:
+                return LeafNode(tag="b", value=text_node.text, props=None)
+            case TextType.ITALIC:
+                return LeafNode(tag="i", value=text_node.text, props=None)
+            case TextType.CODE:
+                return LeafNode(tag="code", value=text_node.text, props=None)
+            case TextType.LINK:
+                return LeafNode(
+                    tag="a", value=text_node.text, props={"href": text_node.url}
+                )
+            case TextType.IMAGE:
+                return LeafNode(
+                    tag="img",
+                    value="",
+                    props={"src": text_node.url, "alt": text_node.text},
+                )
+    except Exception as e:
+        return f"Error: {e}"
