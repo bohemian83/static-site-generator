@@ -1,8 +1,8 @@
-from htmlnode import HTMLNode, LeafNode, ParentNode
+from htmlnode import HTMLNode, LeafNode, ParentNode, text_node_to_html_node
+from textnode import TextNode, TextType
 import unittest
 
 
-# TODO: Add more ParentNode tests
 class HTMLNodeTest(unittest.TestCase):
     def test_eq(self):
         children = [HTMLNode("h1", "heading1"), HTMLNode("h2", "heading2")]
@@ -99,16 +99,10 @@ class HTMLNodeTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             node2.to_html()
 
-    def test_leaf_to_html_empty_value_raises_error(self):
-        node = LeafNode("p", "")
-        with self.assertRaises(ValueError):
-            node.to_html()
-
     def test_multiple_props(self):
         props = {"class": "btn", "id": "submit-btn", "disabled": "true"}
         node = LeafNode("button", "Submit", props)
         result = node.to_html()
-        # Note: This will fail due to the bug - props aren't being used
         self.assertIn('class="btn"', result)
         self.assertIn('id="submit-btn"', result)
         self.assertIn('disabled="true"', result)
@@ -224,3 +218,107 @@ class HTMLNodeTest(unittest.TestCase):
 
         expected = '<div class="container"><h1>Title</h1><p>Text with <b>bold</b> and <i>italic</i></p></div>'
         self.assertEqual(container.to_html(), expected)
+
+    def test_text(self):
+        node = TextNode("This is a text node", TextType.TEXT)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, None)
+        self.assertEqual(html_node.value, "This is a text node")
+
+    def test_bold(self):
+        """Test BOLD type converts to <b> tag"""
+        node = TextNode("Bold text", TextType.BOLD)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, "b")
+        self.assertEqual(html_node.value, "Bold text")
+        self.assertEqual(html_node.props, None)
+
+    def test_italic(self):
+        """Test ITALIC type converts to <i> tag"""
+        node = TextNode("Italic text", TextType.ITALIC)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, "i")
+        self.assertEqual(html_node.value, "Italic text")
+        self.assertEqual(html_node.props, None)
+
+    def test_code(self):
+        """Test CODE type converts to <code> tag"""
+        node = TextNode("print('hello')", TextType.CODE)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, "code")
+        self.assertEqual(html_node.value, "print('hello')")
+        self.assertEqual(html_node.props, None)
+
+    def test_link(self):
+        """Test LINK type converts to <a> tag with href"""
+        node = TextNode("Click here", TextType.LINK, "https://www.google.com")
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, "a")
+        self.assertEqual(html_node.value, "Click here")
+        self.assertEqual(html_node.props, {"href": "https://www.google.com"})
+
+    def test_image(self):
+        """Test IMAGE type converts to <img> tag with src and alt"""
+        node = TextNode("Alt text", TextType.IMAGE, "https://example.com/image.png")
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, "img")
+        self.assertEqual(html_node.value, "")
+        self.assertEqual(
+            html_node.props, {"src": "https://example.com/image.png", "alt": "Alt text"}
+        )
+
+    def test_invalid_text_type(self):
+        """Test invalid text type returns error"""
+        node = TextNode("Test", "invalid_type")
+        result = text_node_to_html_node(node)
+        self.assertIsInstance(result, str)
+        self.assertTrue(result.startswith("Error:"))
+
+    def test_text_to_html_renders_correctly(self):
+        """Test that generated LeafNode renders to correct HTML"""
+        node = TextNode("Bold text", TextType.BOLD)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.to_html(), "<b>Bold text</b>")
+
+    def test_code_to_html_renders_correctly(self):
+        """Test CODE renders correctly"""
+        node = TextNode("code snippet", TextType.CODE)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.to_html(), "<code>code snippet</code>")
+
+    def test_image_to_html_renders_correctly(self):
+        """Test IMAGE renders correctly with self-closing tag"""
+        node = TextNode("An image", TextType.IMAGE, "https://example.com/pic.jpg")
+        html_node = text_node_to_html_node(node)
+        result = html_node.to_html()
+        self.assertIn('src="https://example.com/pic.jpg"', result)
+        self.assertIn('alt="An image"', result)
+
+    def test_empty_text(self):
+        """Test empty text string"""
+        node = TextNode("", TextType.TEXT)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.value, "")
+
+    def test_text_with_special_characters(self):
+        """Test text with special characters"""
+        node = TextNode("Text with <special> & characters", TextType.TEXT)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.value, "Text with <special> & characters")
+
+    def test_all_text_types_return_leafnode(self):
+        """Test all valid types return LeafNode instances"""
+        test_cases = [
+            TextNode("text", TextType.TEXT),
+            TextNode("bold", TextType.BOLD),
+            TextNode("italic", TextType.ITALIC),
+            TextNode("code", TextType.CODE),
+            TextNode("link", TextType.LINK, "http://url.com"),
+            TextNode("img", TextType.IMAGE, "http://img.com"),
+        ]
+
+        for text_node in test_cases:
+            html_node = text_node_to_html_node(text_node)
+            self.assertIsInstance(
+                html_node, LeafNode, f"Failed for {text_node.text_type}"
+            )
