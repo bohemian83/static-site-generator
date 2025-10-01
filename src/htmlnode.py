@@ -52,6 +52,9 @@ class ParentNode(HTMLNode):
         super().__init__(tag, None, children, props)
 
     def to_html(self):
+        """
+        Converts a ParentNode object to html
+        """
         if self.tag is None:
             raise ValueError("Invalid HMTL: no tag")
 
