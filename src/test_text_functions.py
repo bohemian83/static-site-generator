@@ -7,6 +7,7 @@ from text_functions import (
     split_nodes_image,
     split_nodes_link,
     text_to_textnodes,
+    markdown_to_blocks,
 )
 
 
@@ -489,14 +490,6 @@ class TestTextToTextNodes(unittest.TestCase):
         ]
         self.assertEqual(nodes, expected)
 
-    # def test_empty_string(self):
-    #     """Test empty string input"""
-    #     text = ""
-    #     nodes = text_to_textnodes(text)
-    #
-    #     expected = [TextNode("", TextType.TEXT)]
-    #     self.assertEqual(nodes, expected)
-
     def test_formatting_at_start(self):
         """Test formatting at the beginning"""
         text = "**Bold** at start"
@@ -548,6 +541,26 @@ class TestTextToTextNodes(unittest.TestCase):
             TextNode("link", TextType.LINK, "url"),
         ]
         self.assertEqual(nodes, expected)
+
+
+class TestMarkdownToBlocks(unittest.TestCase):
+    def test_markdown_to_blocks(self):
+        md = """This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
 
 
 if __name__ == "__main__":
