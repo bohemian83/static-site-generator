@@ -5,6 +5,7 @@ from text_functions import (
     extract_markdown_images,
     split_nodes_image,
     split_nodes_link,
+    text_to_textnodes,
 )
 
 
@@ -50,12 +51,8 @@ def main():
     # )
     # print(split_nodes_image([node, node1, node3, node4]))
     #
-
-    node = TextNode(
-        "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)",
-        TextType.TEXT,
-    )
-    print(split_nodes_link([node]))
+    text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+    print(text_to_textnodes(text))
 
 
 main()
