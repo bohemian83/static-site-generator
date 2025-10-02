@@ -100,3 +100,18 @@ def split_nodes_link(old_nodes):
                     new_nodes.append(TextNode(section, TextType.TEXT))
 
     return new_nodes
+
+
+def text_to_textnodes(text):
+    """
+    Converts markdown text to a list of TextNode objects
+    """
+    bold_spliter = split_nodes_delimiter(
+        [TextNode(text, TextType.TEXT)], "**", TextType.BOLD
+    )
+    italic_splitter = split_nodes_delimiter(bold_spliter, "_", TextType.ITALIC)
+    code_splitter = split_nodes_delimiter(italic_splitter, "`", TextType.CODE)
+    image_splitter = split_nodes_image(code_splitter)
+    link_splitter = split_nodes_link(image_splitter)
+
+    return link_splitter
