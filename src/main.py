@@ -1,6 +1,11 @@
 from textnode import TextNode, TextType
 from htmlnode import HTMLNode, LeafNode, ParentNode, text_node_to_html_node
-from text_functions import split_nodes_delimiter, extract_markdown_images
+from text_functions import (
+    split_nodes_delimiter,
+    extract_markdown_images,
+    split_nodes_image,
+    split_nodes_link,
+)
 
 
 def main():
@@ -24,8 +29,33 @@ def main():
     # old_nodes = [node]
     # new_nodes = split_nodes_delimiter(old_nodes, "**", TextType.BOLD)
 
-    text = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif)"
-    print(extract_markdown_images(text))
+    # text = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif)"
+    # print(extract_markdown_images(text))
+
+    # node = TextNode(
+    #     "![image](https://i.imgur.com/zjjcJKZ.png)",
+    #     TextType.TEXT,
+    # )
+    # node1 = TextNode(
+    #     "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
+    #     TextType.TEXT,
+    # )
+    # node3 = TextNode(
+    #     "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)",
+    #     TextType.TEXT,
+    # )
+    # node4 = TextNode(
+    #     "This is text node",
+    #     TextType.TEXT,
+    # )
+    # print(split_nodes_image([node, node1, node3, node4]))
+    #
+
+    node = TextNode(
+        "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)",
+        TextType.TEXT,
+    )
+    print(split_nodes_link([node]))
 
 
 main()
