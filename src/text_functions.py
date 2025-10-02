@@ -115,3 +115,12 @@ def text_to_textnodes(text):
     link_splitter = split_nodes_link(image_splitter)
 
     return link_splitter
+
+
+def markdown_to_blocks(markdown):
+    """
+    Splits a markdown text to a list of markdown blocks
+    """
+    blocks = markdown.split("\n\n")
+
+    return blocks
