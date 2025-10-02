@@ -6,6 +6,7 @@ from text_functions import (
     extract_markdown_links,
     split_nodes_image,
     split_nodes_link,
+    text_to_textnodes,
 )
 
 
@@ -334,6 +335,219 @@ class TestSplitNodesLink(unittest.TestCase):
             TextNode("link2", TextType.LINK, "https://example.com/2"),
         ]
         self.assertEqual(new_nodes, expected)
+
+
+class TestTextToTextNodes(unittest.TestCase):
+    def test_complex_mixed_formatting(self):
+        """Test text with all formatting types"""
+        text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        nodes = text_to_textnodes(text)
+
+        expected = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode(
+                "obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"
+            ),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+        ]
+        self.assertEqual(nodes, expected)
+
+    def test_plain_text_only(self):
+        """Test plain text with no formatting"""
+        text = "This is just plain text with no formatting"
+        nodes = text_to_textnodes(text)
+
+        expected = [
+            TextNode("This is just plain text with no formatting", TextType.TEXT)
+        ]
+        self.assertEqual(nodes, expected)
+
+    def test_bold_only(self):
+        """Test text with only bold formatting"""
+        text = "This has **bold text** in it"
+        nodes = text_to_textnodes(text)
+
+        expected = [
+            TextNode("This has ", TextType.TEXT),
+            TextNode("bold text", TextType.BOLD),
+            TextNode(" in it", TextType.TEXT),
+        ]
+        self.assertEqual(nodes, expected)
+
+    def test_italic_only(self):
+        """Test text with only italic formatting"""
+        text = "This has _italic text_ in it"
+        nodes = text_to_textnodes(text)
+
+        expected = [
+            TextNode("This has ", TextType.TEXT),
+            TextNode("italic text", TextType.ITALIC),
+            TextNode(" in it", TextType.TEXT),
+        ]
+        self.assertEqual(nodes, expected)
+
+    def test_code_only(self):
+        """Test text with only code formatting"""
+        text = "This has `code` in it"
+        nodes = text_to_textnodes(text)
+
+        expected = [
+            TextNode("This has ", TextType.TEXT),
+            TextNode("code", TextType.CODE),
+            TextNode(" in it", TextType.TEXT),
+        ]
+        self.assertEqual(nodes, expected)
+
+    def test_multiple_bold(self):
+        """Test text with multiple bold sections"""
+        text = "**First** and **second** bold"
+        nodes = text_to_textnodes(text)
+
+        expected = [
+            TextNode("First", TextType.BOLD),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("second", TextType.BOLD),
+            TextNode(" bold", TextType.TEXT),
+        ]
+        self.assertEqual(nodes, expected)
+
+    def test_multiple_italic(self):
+        """Test text with multiple italic sections"""
+        text = "_First_ and _second_ italic"
+        nodes = text_to_textnodes(text)
+
+        expected = [
+            TextNode("First", TextType.ITALIC),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("second", TextType.ITALIC),
+            TextNode(" italic", TextType.TEXT),
+        ]
+        self.assertEqual(nodes, expected)
+
+    def test_image_only(self):
+        """Test text with only an image"""
+        text = "Check out ![my image](https://example.com/pic.jpg)"
+        nodes = text_to_textnodes(text)
+
+        expected = [
+            TextNode("Check out ", TextType.TEXT),
+            TextNode("my image", TextType.IMAGE, "https://example.com/pic.jpg"),
+        ]
+        self.assertEqual(nodes, expected)
+
+    def test_link_only(self):
+        """Test text with only a link"""
+        text = "Visit [my website](https://example.com)"
+        nodes = text_to_textnodes(text)
+
+        expected = [
+            TextNode("Visit ", TextType.TEXT),
+            TextNode("my website", TextType.LINK, "https://example.com"),
+        ]
+        self.assertEqual(nodes, expected)
+
+    def test_image_and_link(self):
+        """Test text with both image and link"""
+        text = "![img](https://img.com/1.jpg) and [link](https://site.com)"
+        nodes = text_to_textnodes(text)
+
+        expected = [
+            TextNode("img", TextType.IMAGE, "https://img.com/1.jpg"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://site.com"),
+        ]
+        self.assertEqual(nodes, expected)
+
+    def test_bold_and_italic_adjacent(self):
+        """Test bold and italic next to each other"""
+        text = "**bold**_italic_"
+        nodes = text_to_textnodes(text)
+
+        expected = [
+            TextNode("bold", TextType.BOLD),
+            TextNode("italic", TextType.ITALIC),
+        ]
+        self.assertEqual(nodes, expected)
+
+    def test_bold_and_italic_mixed(self):
+        """Test bold and italic mixed together"""
+        text = "**bold** and _italic_ text"
+        nodes = text_to_textnodes(text)
+
+        expected = [
+            TextNode("bold", TextType.BOLD),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" text", TextType.TEXT),
+        ]
+        self.assertEqual(nodes, expected)
+
+    # def test_empty_string(self):
+    #     """Test empty string input"""
+    #     text = ""
+    #     nodes = text_to_textnodes(text)
+    #
+    #     expected = [TextNode("", TextType.TEXT)]
+    #     self.assertEqual(nodes, expected)
+
+    def test_formatting_at_start(self):
+        """Test formatting at the beginning"""
+        text = "**Bold** at start"
+        nodes = text_to_textnodes(text)
+
+        expected = [
+            TextNode("Bold", TextType.BOLD),
+            TextNode(" at start", TextType.TEXT),
+        ]
+        self.assertEqual(nodes, expected)
+
+    def test_formatting_at_end(self):
+        """Test formatting at the end"""
+        text = "End with _italic_"
+        nodes = text_to_textnodes(text)
+
+        expected = [
+            TextNode("End with ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+        ]
+        self.assertEqual(nodes, expected)
+
+    def test_multiple_images(self):
+        """Test multiple images"""
+        text = "![img1](https://a.com/1.jpg) and ![img2](https://b.com/2.png)"
+        nodes = text_to_textnodes(text)
+
+        expected = [
+            TextNode("img1", TextType.IMAGE, "https://a.com/1.jpg"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("img2", TextType.IMAGE, "https://b.com/2.png"),
+        ]
+        self.assertEqual(nodes, expected)
+
+    def test_all_formatting_types_sequential(self):
+        """Test all formatting types one after another"""
+        text = "**bold** _italic_ `code` ![img](url) [link](url)"
+        nodes = text_to_textnodes(text)
+
+        expected = [
+            TextNode("bold", TextType.BOLD),
+            TextNode(" ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" ", TextType.TEXT),
+            TextNode("code", TextType.CODE),
+            TextNode(" ", TextType.TEXT),
+            TextNode("img", TextType.IMAGE, "url"),
+            TextNode(" ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "url"),
+        ]
+        self.assertEqual(nodes, expected)
 
 
 if __name__ == "__main__":
