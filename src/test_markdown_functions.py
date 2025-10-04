@@ -648,12 +648,12 @@ class TestBlockToBlockType(unittest.TestCase):
     def test_unordered_list_single_item(self):
         """Test single-item unordered list"""
         block = "- Item 1"
-        self.assertEqual(block_to_block_type(block), BlockType.UN_LIST)
+        self.assertEqual(block_to_block_type(block), BlockType.ULIST)
 
     def test_unordered_list_multiple_items(self):
         """Test multi-item unordered list"""
         block = "- Item 1\n- Item 2\n- Item 3"
-        self.assertEqual(block_to_block_type(block), BlockType.UN_LIST)
+        self.assertEqual(block_to_block_type(block), BlockType.ULIST)
 
     def test_unordered_list_no_space_is_paragraph(self):
         """Test that - without space is not unordered list"""
@@ -669,12 +669,12 @@ class TestBlockToBlockType(unittest.TestCase):
     def test_ordered_list_single_item(self):
         """Test single-item ordered list"""
         block = "1. Item 1"
-        self.assertEqual(block_to_block_type(block), BlockType.ORD_LIST)
+        self.assertEqual(block_to_block_type(block), BlockType.OLIST)
 
     def test_ordered_list_multiple_items(self):
         """Test multi-item ordered list"""
         block = "1. Item 1\n2. Item 2\n3. Item 3"
-        self.assertEqual(block_to_block_type(block), BlockType.ORD_LIST)
+        self.assertEqual(block_to_block_type(block), BlockType.OLIST)
 
     def test_ordered_list_wrong_start_number_is_paragraph(self):
         """Test that list not starting at 1 is paragraph"""
