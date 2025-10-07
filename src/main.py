@@ -1,12 +1,13 @@
 from textnode import TextNode, TextType
 from htmlnode import HTMLNode, LeafNode, ParentNode, text_node_to_html_node
-from text_functions import (
+from markdown_functions import (
     split_nodes_delimiter,
     extract_markdown_images,
     split_nodes_image,
     split_nodes_link,
     text_to_textnodes,
     markdown_to_blocks,
+    markdown_to_html_node,
 )
 
 
@@ -55,15 +56,19 @@ def main():
     # text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
     # print(text_to_textnodes(text))
 
-    md = """This is **bolded** paragraph
+    md = """
+This is **bolded** paragraph
+text in a p
+tag here
 
 This is another paragraph with _italic_ text and `code` here
-This is the same paragraph on a new line
 
-- This is a list
-- with items
 """
-    print(markdown_to_blocks(md))
+
+    node = markdown_to_html_node(md)
+    html = node.to_html()
+
+    print(html)
 
 
 main()
