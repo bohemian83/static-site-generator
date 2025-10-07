@@ -1,6 +1,7 @@
 import re
 from enum import Enum
 from textnode import TextNode, TextType
+from htmlnode import HTMLNode, LeafNode, ParentNode, text_node_to_html_node
 
 
 class BlockType(Enum):
@@ -160,3 +161,120 @@ def block_to_block_type(block):
         return BlockType.OLIST
     else:
         return BlockType.PARAGRAPH
+
+
+def block_to_parent_node(block, block_type):
+    match block_type:
+        case BlockType.HEADING:
+            first_line = block.split("\n")[0]
+            hash_count = len(first_line) - len(first_line.lstrip("#"))
+            return ParentNode(f"h{hash_count}", None)
+        case BlockType.CODE:
+            return ParentNode("code", None)
+        case BlockType.QUOTE:
+            return ParentNode("blockquote", None)
+        case BlockType.ULIST:
+            return ParentNode("ul", None)
+        case BlockType.OLIST:
+            return ParentNode("ol", None)
+        case BlockType.PARAGRAPH:
+            return ParentNode("p", None)
+
+
+def process_paragraph_block(block):
+    block = " ".join(block.split())
+    textnodes = text_to_textnodes(block)
+    leafnodes = list(map(text_node_to_html_node, textnodes))
+    return leafnodes
+
+
+def process_quote_block(block):
+    block = " ".join(line.lstrip("> ").strip() for line in block.split("\n"))
+    textnodes = text_to_textnodes(block)
+    leafnodes = list(map(text_node_to_html_node, textnodes))
+    return leafnodes
+
+
+def process_heading_block(block):
+    block = block.lstrip("#").strip()
+    textnodes = text_to_textnodes(block)
+    leafnodes = list(map(text_node_to_html_node, textnodes))
+    return leafnodes
+
+
+def process_ulist_block(block):
+    lines = block.split("\n")
+    leafnodes = []
+    for line in lines:
+        line = line.lstrip("- ")
+        line_textnodes = text_to_textnodes(line)
+        line_leafnodes = list(map(text_node_to_html_node, line_textnodes))
+        leafnodes.append(ParentNode("li", line_leafnodes))
+
+    return leafnodes
+
+
+def process_olist_block(block):
+    lines = block.split("\n")
+    leafnodes = []
+    for line in lines:
+        line = re.sub(r"\d\.\s", "", line)
+        line_textnodes = text_to_textnodes(line)
+        line_leafnodes = list(map(text_node_to_html_node, line_textnodes))
+        leafnodes.append(ParentNode("li", line_leafnodes))
+
+    return leafnodes
+
+
+def text_to_children(block, block_type):
+    if block_type == BlockType.PARAGRAPH:
+        nodes = process_paragraph_block(block)
+    elif block_type == BlockType.QUOTE:
+        nodes = process_quote_block(block)
+    elif block_type == BlockType.HEADING:
+        nodes = process_heading_block(block)
+
+    if block_type == BlockType.ULIST:
+        nodes = process_ulist_block(block)
+    elif block_type == BlockType.OLIST:
+        nodes = process_olist_block(block)
+
+    return nodes
+
+
+def code_to_textnode(block):
+    """
+    Handles multi line code blocks
+    """
+    block = block.strip()
+    lines = block.split("\n")
+    if lines[0].startswith("```"):
+        lines = lines[1:]
+    if lines and lines[-1].startswith("```"):
+        lines = lines[:-1]
+    block = "\n".join(lines)
+    if block:
+        block += "\n"
+    return TextNode(block, TextType.CODE)
+
+
+def markdown_to_html_node(markdown):
+    """
+    Splits markdown text to blocks and converts it to HTMLNodes
+    """
+    mk_blocks = markdown_to_blocks(markdown)
+    block_nodes = []
+    for block in mk_blocks:
+        block_type = block_to_block_type(block)
+        block_node = block_to_parent_node(block, block_type)
+
+        if block_type != BlockType.CODE:
+            block_node.children = text_to_children(block, block_type)
+        else:
+            code_textnode = code_to_textnode(block)
+            child_code_node = text_node_to_html_node(code_textnode)
+            block_node = ParentNode(tag="pre", children=[child_code_node])
+
+        block_nodes.append(block_node)
+
+    return ParentNode(tag="div", children=block_nodes)
