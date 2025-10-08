@@ -40,10 +40,6 @@ the **same** even with inline stuff
         md = """
 ### Heading 3
 
-> One quote
-> A second quote
-> a final quote
-
 This is **bolded** paragraph
 text in a p
 tag here
@@ -54,7 +50,7 @@ This is another paragraph with _italic_ text and `code` here
         html = node.to_html()
         self.assertEqual(
             html,
-            "<div><h3>Heading 3</h3><blockquote>One quote A second quote a final quote</blockquote><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
+            "<div><h3>Heading 3</h3><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
         )
 
     def test_lists(self):
@@ -72,4 +68,35 @@ This is another paragraph with _italic_ text and `code` here
         self.assertEqual(
             html,
             "<div><ul><li>Here we have</li><li>an unordered list with <b>bolded</b></li><li>and <i>italic</i> text</li></ul><ol><li>And this is an ordered</li><li>list with <b>bold</b></li><li>and <i>italic</i> text</li></ol></div>",
+        )
+
+    def test_quote(self):
+        md = """
+> One quote
+> A second quote
+> a final quote
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><blockquote>One quote A second quote a final quote</blockquote></div>",
+        )
+
+    def test_quote_list_in_code(self):
+        md = """
+```
+> A quote
+> goes here
+ 
+1. item 1
+2. item 2
+```
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><pre><code>> A quote\n> goes here\n \n1. item 1\n2. item 2\n</code></pre></div>",
         )
