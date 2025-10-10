@@ -1,15 +1,20 @@
+import sys
 from generate_page import move_assets, generate_pages_recursive
 
 
 def main():
+    if len(sys.argv) < 2:
+        basepath = "/"
+    else:
+        basepath = sys.argv[1]
+
     static_src = "static"
-    public_dest = "public"
     from_path = "content"
     template_path = "template.html"
-    dest_path = "public"
+    dest_path = "docs"
     try:
-        move_assets(static_src, public_dest)
-        generate_pages_recursive(from_path, template_path, dest_path)
+        move_assets(static_src, dest_path)
+        generate_pages_recursive(from_path, template_path, dest_path, basepath)
     except Exception as e:
         print(f"Error: {e}")
 
